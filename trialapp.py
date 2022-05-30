@@ -20,6 +20,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from streamlit_option_menu import option_menu
 
+# --- Initialising SessionState ---
+if "load_state" not in st.session_state:
+     st.session_state.load_state = False
+
 @st.cache
 def load_data(what_data):
     if what_data == 'map_data' :
@@ -84,8 +88,7 @@ merged = load_data('map_data')
 st.sidebar.image('assets/AppLogo.png', use_column_width=True) 
 
 with st.sidebar.container():
-
-    st.sidebar.title(' ABOUT: \n ***Founded in 2022, MSJL Consulting Co. helps home buyers estimate home prices and homeowners estimate the price change after remodelling***')
+     st.sidebar.title(' ABOUT: \n ***Founded in 2022, MSJL Consulting Co. helps home buyers estimate home prices and homeowners estimate the price change after remodelling***')
 
 page = st.sidebar.radio("Menu", ["Map of Ames", "Price Predictions", "Remodelling"]) 
 
@@ -192,26 +195,21 @@ basehouse_PIN = 535454150
     # except: pass
 
 # Page 6 Modeling
-if page == "Remodelling":
+if page == "Remodelling" or st.session_state.load_state:
+    st.session_state.load_state = True
     with st.container():
-        st.header('Remodelling')
-
+        st.title('Remodelling')
         st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
-
         sec_select = st.selectbox('Select Sector',['North','North West','Downtown','South','South West', 'South East'])
         sec_mapper = {'Downtown':'Downtown','South':'South','South West':'South West','South East':'South East','North':'North','North West':'North West'}
         model_sec = sec_mapper[sec_select]
         model_neib = st.radio('Select Neighborhood',addID.loc[addID.Directions==model_sec]['Neighborhood'].unique())
-
-        address_df = addID.loc[(addID['Directions']==model_sec) & (addID['Neighborhood']==model_neib)]
-
         st.markdown(f"### {neib_fullname[model_neib]}")
-
+        address_df = addID.loc[(addID['Directions']==model_sec) & (addID['Neighborhood']==model_neib)]
         col_main, col_empty, col_b , col_e = st.columns([4,0.3,4,3]) #Set Columns
         col_main.markdown('##### House Selection')
         col_b.markdown('##### House Details')
         col_e.markdown('<p style="font-family:Courier; color:white; font-size: 20px;">c</p>',unsafe_allow_html=True)
-
         col_r, col_m, col_bpx, col_rpx = st.columns([3,2,2,2])
         col_r.markdown('##### Renovation')
         col_m.markdown('<p style="font-family:Courier; color:white; font-size: 20px;">c</p>',unsafe_allow_html=True)
@@ -220,8 +218,9 @@ if page == "Remodelling":
         with col_main.container():
 
             address_df = addID.loc[(addID['Directions']==model_sec) &  (addID['Neighborhood']==model_neib)]
-            #['Address']
-
+            
+            # Attempt to add drop-down menu, didn't work
+            # ['Address']
             # source = col_main.selectbox('Select your Address', address_df)
             # sourceindex = source.selected.index
             # st.markdown(f'sourceindex')
@@ -246,8 +245,7 @@ if page == "Remodelling":
                  """)
                  )
 
-            mytable = DataTable(source=source, columns=columns, height=200)
-            
+            mytable = DataTable(source=source, columns=columns, height=220)
             result = streamlit_bokeh_events(
                 bokeh_plot=mytable, 
                 events="INDEX_SELECT", 
@@ -258,8 +256,8 @@ if page == "Remodelling":
 
             if result:
                  if result.get("INDEX_SELECT"):
-                     # st.markdown(f'#### **{address_df.iloc[result.get("INDEX_SELECT")["data"],0].values[0]}**')
-                     basehouse_PIN = address_df.index.values[result.get("INDEX_SELECT")["data"]][0]
+                    st.markdown(f'#### **{address_df.iloc[result.get("INDEX_SELECT")["data"],4].values[0]}**')
+                    basehouse_PIN = address_df.index.values[result.get("INDEX_SELECT")["data"]][0]
             pkl_basehouse = FinalData.loc[[basehouse_PIN]]
             pkl_basehouse2 = addID.loc[[basehouse_PIN]]
 
