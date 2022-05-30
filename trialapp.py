@@ -214,6 +214,7 @@ hovertemplate = "<b>Neighborhood: </b> Bluestem <br>" +"<b>Min Price : </b> 1150
 elif page == "Remodelling" or st.session_state.load_state:
     with st.container():
         st.session_state.load_state = True
+        page = "Remodelling"
         st.title('Remodelling')
         st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
         sec_select = st.selectbox('Select Sector',['North','North West','Downtown','South','South West', 'South East'])
