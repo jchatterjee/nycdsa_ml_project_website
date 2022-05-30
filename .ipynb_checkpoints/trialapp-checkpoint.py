@@ -198,7 +198,7 @@ if page == "Remodelling":
 
         st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
 
-        sec_select = st.selectbox('Select Sector',['North','North West','Downtown','South','South West, South East'])
+        sec_select = st.selectbox('Select Sector',['North','North West','Downtown','South','South West', 'South East'])
         sec_mapper = {'Downtown':'Downtown','South':'South','South West':'South West','South East':'South East','North':'North','North West':'North West'}
         model_sec = sec_mapper[sec_select]
         model_neib = st.radio('Select Neighborhood',addID.loc[addID.Directions==model_sec]['Neighborhood'].unique())
