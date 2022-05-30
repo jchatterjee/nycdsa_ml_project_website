@@ -205,7 +205,7 @@ if page == "Remodelling":
 
         address_df = addID.loc[(addID['Directions']==model_sec) & (addID['Neighborhood']==model_neib)]
 
-        #st.markdown(f"### {neib_fullname[model_neib]}")
+        st.markdown(f"### {neib_fullname[model_neib]}")
 
         col_main, col_empty, col_b , col_e = st.columns([4,0.3,4,3]) #Set Columns
         col_main.markdown('##### House Selection')
