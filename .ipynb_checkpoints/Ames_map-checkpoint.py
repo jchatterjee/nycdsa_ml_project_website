@@ -4,12 +4,10 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
-import plotly
-
 import plotly.graph_objects as go
 
 '''loading data'''
-merged = pd.read_csv('geom.csv', index_col=0)
+merged = pd.read_csv('assets/geom.csv', index_col=0)
 merged.shape
 
 fig = go.Figure(data=[ 

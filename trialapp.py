@@ -1,5 +1,7 @@
 import os
 import streamlit as st
+import subprocess
+import sys
 import pandas as pd
 import numpy as np
 import pickle
@@ -36,14 +38,13 @@ def load_data(what_data):
         data = pd.read_csv('assets/pkl_base.csv', index_col='PID')
     return data
 
-# #loading data
-# ## Sidebar Data
+## Sidebar Data
 avg = load_data('side_data')
-# ## Address Data
+## Address Data
 addID = load_data('address_data')
-# ## Model DATA
+## Model DATA
 FinalData = load_data('model_data')
-# ## MAP DATA
+## MAP DATA
 merged = load_data('map_data')
 
 # st.write('Contents of the `.streamlit/config.toml` file of this app')
@@ -139,7 +140,7 @@ neib_fullname = {'Blmngtn':'Bloomington Heights',
        'Landmrk':'Landmark Villas'}
 
 # ========Modeling Functions===================================================
-model = pickle.load(open('assets/model.pkl', 'rb'))
+#model = pickle.load(open('assets/model.pkl', 'rb'))
 
 def num_format(num):
     # converts any int/float to human readable string with thousandth commas
@@ -162,6 +163,26 @@ def pkl_dum_encode(base_data, code, feat):
     return base_data
 
 basehouse_PIN = 535454150
+
+## model function
+def elasticnet(df, sdf):
+    x = df.drop(['SalePrice'],axis=1)
+    y = df['SalePrice']
+    y=np.log(y)
+
+    #to convert whatever strings your data might contain to numeric values. 
+    #If they're incompatible with conversion, they'll be reduced to NaNs.
+    x = x.apply(pd.to_numeric, errors='coerce')
+    y = y.apply(pd.to_numeric, errors='coerce')
+    x.fillna(0, inplace=True)
+    y.fillna(0, inplace=True)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state = 41)
+    model = ElasticNet(alpha=0.000041775510204081, l1_ratio=0.9591836734693877, normalize=True)
+    model.fit(x_train, y_train)
+    
+    j = sdf.drop(['SalePrice'],axis=1)
+
+    return model.predict(j)
 
 #=============================================================================
 
@@ -194,7 +215,13 @@ basehouse_PIN = 535454150
     #     st.sidebar.markdown(f"Townhouse Inside Units average price: *${num_format(avg[(avg['BldgType'] =='Twnhs') & (avg['Neighborhood'] ==model_neib)]['mean'])}*")
     # except: pass
 
-# Page 6 Modeling
+# Map of Ames
+if page == "Map of Ames" or st.session_state.load_state:
+    #st.session_state.load_state = True
+    with st.container():
+        subprocess.run([f"{sys.executable}", "Ames_map.py"])
+
+# Home Remodelling Estimates
 if page == "Remodelling" or st.session_state.load_state:
     st.session_state.load_state = True
     with st.container():
@@ -330,7 +357,7 @@ if page == "Remodelling" or st.session_state.load_state:
             base_pool = col_b.radio('Pool',['Yes'])
     
         # Base House MODEL PRICE
-        pkl_baseprice = np.floor(model.predict(pkl_basehouse)[0])
+        pkl_baseprice = np.floor(np.exp(elasticnet(FinalData, pkl_basehouse)[0]))
         col_bpx.subheader(f'**${num_format(pkl_baseprice)}**')
         col_bpx.caption('Baseline Price Prediction')
         col_bpx.write('-------------------------')
@@ -341,7 +368,7 @@ if page == "Remodelling" or st.session_state.load_state:
         col_bpx.markdown(f"finished Outside Spaces: **{num_format(pkl_basehouse['Outside_Spaces'].values[0])}** sf")
         
         # Renovated House PRICE
-        pkl_renoprice = np.floor(model.predict(pkl_renohouse)[0])
+        pkl_renoprice = np.floor(np.exp(elasticnet(FinalData, pkl_renohouse)[0]))
         col_rpx.subheader(f'**${num_format(pkl_renoprice)}**')
         col_rpx.caption('Renovated House Price')
 
