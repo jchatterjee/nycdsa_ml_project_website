@@ -210,6 +210,116 @@ hovertemplate = "<b>Neighborhood: </b> Bluestem <br>" +"<b>Min Price : </b> 1150
         st.plotly_chart(fig, use_container_width=True)
 
 #=============================================================================
+# Home Price Predictions
+elif page == "Price Predictions":
+    with st.container():
+        #st.session_state.load_state = True
+        #page = "Price Predictions"
+        st.title('Home Price Predictions')
+        st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)
+        sec_select = st.selectbox('Select Sector',['North','North West','Downtown','South','South West', 'South East'])
+        sec_mapper = {'Downtown':'Downtown','South':'South','South West':'South West','South East':'South East','North':'North','North West':'North West'}
+        model_sec = sec_mapper[sec_select]
+        model_neib = st.radio('Select Neighborhood',addID.loc[addID.Directions==model_sec]['Neighborhood'].unique())
+        st.markdown(f"### {neib_fullname[model_neib]}")
+        address_df = addID.loc[(addID['Directions']==model_sec) & (addID['Neighborhood']==model_neib)]
+        col_main, col_empty, col_b , col_e = st.columns([4,0.3,4,3]) #Set Columns
+        col_main.markdown('##### House Selection')
+        col_b.markdown('##### House Details')
+        col_e.markdown('<p style="font-family:Courier; color:white; font-size: 20px;">c</p>',unsafe_allow_html=True)
+        col_r, col_m, col_bpx, col_rpx = st.columns([3,2,2,2])
+        col_r.markdown('##### Renovation')
+        col_m.markdown('<p style="font-family:Courier; color:white; font-size: 20px;">c</p>',unsafe_allow_html=True)
+
+         #**********************
+        with col_main.container():
+
+            # Total number of rooms
+            tot_rooms = col_main.select_slider(
+                'Select Number of Rooms',
+                options = range(0,int(FinalData.loc[address_df.index]['TotRmsAbvGrd'].max())))
+
+            # Total number of bathrooms
+            tot_bath = col_main.select_slider(
+                'Select Number of Bathrooms',
+                options = map(lambda x: x/10.0, range(0,int(10*(FinalData.loc[address_df.index]['Totalbathr'].max())),5)))
+            
+            # Total number of garage car spaces
+            tot_cars = col_main.select_slider(
+                'Select Number of Bathrooms',
+                options = range(0,int(addID.loc[address_df.index]['GarageCars'].max())))
+            car_dim = 320 # square footage of one car space on average
+            tot_gar_area = car_dim*tot_cars
+            
+            
+            
+#         # HOUSE RENO Details
+#         col_b.markdown(f"Number of Rooms: **{num_format(pkl_basehouse['TotRmsAbvGrd'].values[0])}**")
+
+#         # Number of Bathrooms
+#         col_b.markdown(f"Bathrooms:  **{num_format(pkl_basehouse['Totalbathr'].values[0])}**")
+
+#         # Exterior Quality
+#         try:
+#             col_b.markdown(f"Exterior Material Quality: **{Qual_mapper[pkl_basehouse['ExterQual'].values[0]]}**")
+#             reno_Exterior = col_r.radio('Remodel Exterior Material',['No', 'Yes'])
+#             if reno_Exterior == 'Yes':
+#                 pkl_renohouse['ExterQual'] = 5
+#         except:
+#             col_b.markdown(f"ExterQual: **None**")
+
+#         # Kitchen Quality
+#         try:
+#             col_b.markdown(f"Kitchen Quality: **{Qual_mapper[pkl_basehouse['KitchenQual'].values[0]]}**")
+#             reno_Kitchen = col_r.radio('Remodel Kitchen',['No', 'Yes'])
+#             if reno_Kitchen == 'Yes':
+#                 pkl_renohouse['KitchenQual'] = 5
+#         except:
+#             col_b.markdown(f"Kitchen Quality: **None**")
+
+#         # Basement Condition
+#         try:
+#             if pkl_basehouse['TotalBsmtSF'].values[0] > 0:
+#                 base_basement = col_e.radio('Basement',['Yes'])
+#                 col_e.markdown(f"Basement Exposure: **{Qual_mapper2[pkl_basehouse['BsmtExposure'].values[0]]}**")
+#                 #reno_Bsmt = col_r.radio('Enhance Basement Exterior Exposure',['No', 'Yes'])
+#                 #if reno_Bsmt == 'Yes':
+#                     #pkl_renohouse['Exposure'] = 3 
+#                 reno_FinBsmt = col_m.radio('Finish Basement',['No', 'Yes'])
+#             if reno_FinBsmt == 'Yes':
+#                 pkl_renohouse['FinBsmt_Perc'] = 100
+#         except:
+#             col_e.markdown(f"No Basement/Exposure")
+
+#         # Garage Quality
+#         try:
+#             col_e.markdown(f"Garage Finish: **{Qual_mapper3[pkl_basehouse['GarageFinish'].values[0]]}**")
+#             reno_Garage = col_m.radio('Finish Garage',['No', 'Yes'])
+#             if reno_Garage == 'Yes':
+#                 pkl_renohouse['GarageFinish'] = 3 
+#         except:
+#             col_e.markdown(f"No Garage")
+        
+#         # Pool
+#         if pkl_basehouse['PoolArea__1'].values[0] == 0:
+#             base_pool = col_b.radio('Pool',['No'])
+#             reno_pool = col_r.radio('Build Pool',['No', 'Yes'])
+#             pkl_renohouse['PoolArea__1'] = 0 if reno_pool == 'No' else 1
+#         else:
+#             base_pool = col_b.radio('Pool',['Yes'])
+    
+#         # Base House MODEL PRICE
+#         pkl_baseprice = np.floor(np.exp(elasticnet(FinalData, pkl_basehouse)[0]))
+#         col_rpx.subheader(f'**${num_format(pkl_baseprice)}**')
+#         col_rpx.caption('Baseline Price Prediction')
+#         col_rpx.write('-------------------------')
+#         col_rpx.caption(f"Actual Price: **${num_format(pkl_basehouse['SalePrice'].values[0])}**")
+#         col_rpx.markdown(f"Livable Space: **{num_format(pkl_basehouse['GrLivArea'].values[0])}** sf")
+#         col_rpx.markdown(f"Percentage of finished Bsmt: **{num_format(pkl_basehouse['FinBsmt_Perc'].values[0])}** %")
+#         col_rpx.markdown(f"Garage Size: **{num_format(pkl_basehouse2['GarageCars'].values[0])}** cars")
+#         col_rpx.markdown(f"finished Outside Spaces: **{num_format(pkl_basehouse['Outside_Spaces'].values[0])}** sf")
+        
+#=============================================================================
 # Home Remodelling Estimates
 elif page == "Remodelling" or st.session_state.load_state:
     with st.container():
@@ -235,13 +345,6 @@ elif page == "Remodelling" or st.session_state.load_state:
         with col_main.container():
 
             address_df = addID.loc[(addID['Directions']==model_sec) &  (addID['Neighborhood']==model_neib)]
-            
-            # Attempt to add drop-down menu, didn't work
-            # ['Address']
-            # source = col_main.selectbox('Select your Address', address_df)
-            # sourceindex = source.selected.index
-            # st.markdown(f'sourceindex')
-
             source = ColumnDataSource(address_df)
             template = """
                  <div style="font-weight: 520; 
@@ -278,23 +381,20 @@ elif page == "Remodelling" or st.session_state.load_state:
             pkl_basehouse = FinalData.loc[[basehouse_PIN]]
             pkl_basehouse2 = addID.loc[[basehouse_PIN]]
 
-
-        # hstype_mapper = {'1Fam':'Single-family Detached House', '2FmCon':'Two-family Converted Houses',
-        #                 'Duplx':'Duplex house', 
-        #                 'TwnhsE':'Townhouse End Unit', 'Twnhs':'Townhouse Inside Unit'}
-        # col_main.caption(f"{hstype_mapper[pkl_basehouse2['BldgType'].values[0]]} in {model_neib}")
+        hstype_mapper = {'1Fam':'Single-family Detached House', '2FmCon':'Two-family Converted Houses',
+                        'Duplx':'Duplex house', 
+                        'TwnhsE':'Townhouse End Unit', 'Twnhs':'Townhouse Inside Unit'}
+        col_main.caption(f"{hstype_mapper[pkl_basehouse2['BldgType'].values[0]]} in {neib_fullname[model_neib]}")
 
         Qual_mapper = {1: 'Poor', 2: 'Fair', 3: 'Average', 4: 'Good', 5: 'Excellent'}
         Qual_mapper2 = {0: 'No Exposure', 1: 'Minimum Exposure', 2: 'Average Exposure', 3: 'Good Exposure'}
         Qual_mapper3 = {1: 'Unfinished', 2: 'Rough Finished', 3: 'Finished'}
-
         pkl_renohouse = pkl_basehouse.copy()
+        
         # HOUSE RENO Details
-
         col_b.markdown(f"Number of Rooms: **{num_format(pkl_basehouse['TotRmsAbvGrd'].values[0])}**")
 
         # Number of Bathrooms
-
         col_b.markdown(f"Bathrooms:  **{num_format(pkl_basehouse['Totalbathr'].values[0])}**")
 
         # Exterior Quality
