@@ -1,7 +1,7 @@
+#=============================================================================
+# Import necessary packages
 import os
 import streamlit as st
-import subprocess
-import sys
 import pandas as pd
 import numpy as np
 import pickle
@@ -22,11 +22,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from streamlit_option_menu import option_menu
 
-# --- Initialising Path to Run Map Script in Parallel ---
-sys.path.append("some_path")
-import Ames_map
-
-
+#=============================================================================
 # --- Initializing SessionState ---
 if "load_state" not in st.session_state:
      st.session_state.load_state = False
@@ -43,6 +39,11 @@ def load_data(what_data):
         data = pd.read_csv('assets/pkl_base.csv', index_col='PID')
     return data
 
+
+# Loading Features used in ElasticNet model
+with open('assets/features_used.txt') as f:
+    features_used = f.readlines()
+f.close()
 # Loading House Points
 with open('assets/house_points.txt') as f:
     house_points = f.readlines()
@@ -61,44 +62,10 @@ FinalData = load_data('model_data')
 ## MAP DATA
 merged = load_data('map_data')
 
-# st.write('Contents of the `.streamlit/config.toml` file of this app')
+# Load the features used into a list
+features = ['GrLivArea', 'SalePrice', 'LotFrontage', 'LotArea', 'LotShape', 'OverallQual', 'OverallCond', 'MasVnrArea', 'ExterQual', 'BsmtQual', 'BsmtExposure', 'TotalBsmtSF', 'HeatingQC', 'LowQualFinSF', 'KitchenQual', 'TotRmsAbvGrd', 'FireplaceQu', 'GarageFinish', 'GarageArea', 'Fence', 'YrSold', 'RemodelBool', 'Age', 'Totalbathr', 'FinBsmt_Perc', 'Outside_Spaces', 'Condition_Norm', 'Condition_Feedr_Artery', 'Condition_PosAN', 'Condition_RRewns', 'MSZoning__RH', 'MSZoning__RM', 'Alley__1', 'LandContour__Bnk', 'LandContour__HLS', 'LandContour__Low', 'LotConfig__Corner', 'LotConfig__CulDSac', 'LotConfig__FR2', 'LotConfig__FR3', 'Neighborhood__Blmngtn', 'Neighborhood__Blueste', 'Neighborhood__BrDale', 'Neighborhood__BrkSide', 'Neighborhood__ClearCr', 'Neighborhood__CollgCr', 'Neighborhood__Crawfor', 'Neighborhood__Edwards', 'Neighborhood__Gilbert', 'Neighborhood__Greens', 'Neighborhood__GrnHill', 'Neighborhood__IDOTRR', 'Neighborhood__Landmrk', 'Neighborhood__MeadowV', 'Neighborhood__Mitchel', 'Neighborhood__NPkVill', 'Neighborhood__NWAmes', 'Neighborhood__NoRidge', 'Neighborhood__NridgHt', 'Neighborhood__OldTown', 'Neighborhood__SWISU', 'Neighborhood__Sawyer', 'Neighborhood__SawyerW', 'Neighborhood__Somerst', 'Neighborhood__StoneBr', 'Neighborhood__Timber', 'Neighborhood__Veenker', 'HouseStyle__1.5Fin', 'HouseStyle__1.5Unf', 'HouseStyle__2.5Fin', 'HouseStyle__2.5Unf', 'HouseStyle__2Story', 'HouseStyle__SFoyer', 'HouseStyle__SLvl', 'RoofStyle__Flat', 'RoofStyle__Gambrel', 'RoofStyle__Hip', 'RoofStyle__Mansard', 'RoofStyle__Shed', 'MasVnrType__BrkCmn', 'MasVnrType__BrkFace', 'MasVnrType__Stone', 'CentralAir__0', 'Electrical__0', 'PavedDrive__0', 'SaleType__Contract', 'SaleType__Other', 'PoolArea__1', 'Foundation__BrkTil', 'Foundation__PConc', 'Foundation__Slab', 'Foundation__Stone', 'Foundation__Wood', 'Season__Autumn', 'Season__Spring', 'Season__Winter', 'SaleCondition__Other', 'NeighborhoodSafety__1', 'NeighborhoodSafety__2', 'NeighborhoodSafety__3', 'NeighborhoodSafety__4', 'NeighborhoodSafety__5', 'NeighborhoodSafety__7', 'NeighborhoodSD__5']
 
-# st.code("""
-# [theme]
-# primaryColor="#F39C12"
-# backgroundColor="#2E86C1"
-# secondaryBackgroundColor="#AED6F1"
-# textColor="#FFFFFF"
-# font="monospace"
-# """)
-
-# st.markdown('<link rel="stylesheet" href = "https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">', unsafe_allow_html=True)
-# st.markdown("""
-# <nav class="navbar fixed-top navbar-expand-lg navbar-dark" style="background-color: #FF4B4B;">
-#   <a class="navbar-brand" href="www.youtube.com" target="_blank" MJSL Consulting </a> 
-#   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-#     <span class="navbar-toggler-icon"></span>
-#   </button>
-
-#   <div class="collapse navbar-collapse" id="navbarNav">
-#     <ul class="navbar-nav">
-#       <li class="nav-item active">
-#         <a class="nav-link"  disabled" href="youtube.com">Home <span class="sr-only">(current)</span></a>
-#       </li>
-#       <li class="nav-item">
-#         <a class="nav-link" href="youtub.com" target = "_blank"> Price Prediction</a>
-#       </li>
-#       <li class="nav-item">
-#         <a class="nav-link " href="twitter.com" id="navbarDropdown" target = "_blank"> Remodelling</a> 
-#       </li>
-#       <li class="nav-item">
-#         <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-#       </li>
-#     </ul>
-#   </div>
-# </nav>
-# """, unsafe_allow_html = True)
-
+#=============================================================================
 # Navigation
 st.sidebar.image('assets/AppLogo.png', use_column_width=True) 
 
@@ -196,6 +163,26 @@ def elasticnet(df, sdf):
 
     return model.predict(j)
 
+## predict function
+def elasticnet2(df, sdf):
+    x = df.drop(['SalePrice'],axis=1)
+    y = df['SalePrice']
+    y=np.log(y)
+
+    #to convert whatever strings your data might contain to numeric values. 
+    #If they're incompatible with conversion, they'll be reduced to NaNs.
+    x = x.apply(pd.to_numeric, errors='coerce')
+    y = y.apply(pd.to_numeric, errors='coerce')
+    x.fillna(0, inplace=True)
+    y.fillna(0, inplace=True)
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size = 0.2, random_state = 41)
+    model = ElasticNet(alpha=0.000041775510204081, l1_ratio=0.9591836734693877, normalize=True)
+    model.fit(x_train, y_train)
+    
+    j = sdf.drop(['SalePrice'])
+
+    return model.predict(j.values.reshape(1, -1))
+
 #=============================================================================
 # Map of Ames
 if page == "Map of Ames":
@@ -223,99 +210,97 @@ elif page == "Price Predictions":
         model_neib = st.radio('Select Neighborhood',addID.loc[addID.Directions==model_sec]['Neighborhood'].unique())
         st.markdown(f"### {neib_fullname[model_neib]}")
         address_df = addID.loc[(addID['Directions']==model_sec) & (addID['Neighborhood']==model_neib)]
-        col_main, col_empty, col_b , col_e = st.columns([4,0.3,4,3]) #Set Columns
-        col_main.markdown('##### House Selection')
-        col_b.markdown('##### House Details')
-        col_e.markdown('<p style="font-family:Courier; color:white; font-size: 20px;">c</p>',unsafe_allow_html=True)
-        col_r, col_m, col_bpx, col_rpx = st.columns([3,2,2,2])
-        col_r.markdown('##### Renovation')
-        col_m.markdown('<p style="font-family:Courier; color:white; font-size: 20px;">c</p>',unsafe_allow_html=True)
+        col_main, col_empty1, col_b, col_empty2, col_e = st.columns([4,0.3,4,0.3,4]) #Set Columns
+        col_main.markdown('##### House Details')
+        col_b.markdown('##### Lot Details')
+        col_e.markdown('##### House Features')
 
-         #**********************
-        with col_main.container():
-
-            # Total number of rooms
-            tot_rooms = col_main.select_slider(
-                'Select Number of Rooms',
-                options = range(0,int(FinalData.loc[address_df.index]['TotRmsAbvGrd'].max())))
-
-            # Total number of bathrooms
-            tot_bath = col_main.select_slider(
-                'Select Number of Bathrooms',
-                options = map(lambda x: x/10.0, range(0,int(10*(FinalData.loc[address_df.index]['Totalbathr'].max())),5)))
-            
-            # Total number of garage car spaces
-            tot_cars = col_main.select_slider(
-                'Select Number of Bathrooms',
-                options = range(0,int(addID.loc[address_df.index]['GarageCars'].max())))
-            car_dim = 320 # square footage of one car space on average
-            tot_gar_area = car_dim*tot_cars
-            
-#         # HOUSE RENO Details
-#         col_b.markdown(f"Number of Rooms: **{num_format(pkl_basehouse['TotRmsAbvGrd'].values[0])}**")
-
-#         # Number of Bathrooms
-#         col_b.markdown(f"Bathrooms:  **{num_format(pkl_basehouse['Totalbathr'].values[0])}**")
-
-#         # Exterior Quality
-#         try:
-#             col_b.markdown(f"Exterior Material Quality: **{Qual_mapper[pkl_basehouse['ExterQual'].values[0]]}**")
-#             reno_Exterior = col_r.radio('Remodel Exterior Material',['No', 'Yes'])
-#             if reno_Exterior == 'Yes':
-#                 pkl_renohouse['ExterQual'] = 5
-#         except:
-#             col_b.markdown(f"ExterQual: **None**")
-
-#         # Kitchen Quality
-#         try:
-#             col_b.markdown(f"Kitchen Quality: **{Qual_mapper[pkl_basehouse['KitchenQual'].values[0]]}**")
-#             reno_Kitchen = col_r.radio('Remodel Kitchen',['No', 'Yes'])
-#             if reno_Kitchen == 'Yes':
-#                 pkl_renohouse['KitchenQual'] = 5
-#         except:
-#             col_b.markdown(f"Kitchen Quality: **None**")
-
-#         # Basement Condition
-#         try:
-#             if pkl_basehouse['TotalBsmtSF'].values[0] > 0:
-#                 base_basement = col_e.radio('Basement',['Yes'])
-#                 col_e.markdown(f"Basement Exposure: **{Qual_mapper2[pkl_basehouse['BsmtExposure'].values[0]]}**")
-#                 #reno_Bsmt = col_r.radio('Enhance Basement Exterior Exposure',['No', 'Yes'])
-#                 #if reno_Bsmt == 'Yes':
-#                     #pkl_renohouse['Exposure'] = 3 
-#                 reno_FinBsmt = col_m.radio('Finish Basement',['No', 'Yes'])
-#             if reno_FinBsmt == 'Yes':
-#                 pkl_renohouse['FinBsmt_Perc'] = 100
-#         except:
-#             col_e.markdown(f"No Basement/Exposure")
-
-#         # Garage Quality
-#         try:
-#             col_e.markdown(f"Garage Finish: **{Qual_mapper3[pkl_basehouse['GarageFinish'].values[0]]}**")
-#             reno_Garage = col_m.radio('Finish Garage',['No', 'Yes'])
-#             if reno_Garage == 'Yes':
-#                 pkl_renohouse['GarageFinish'] = 3 
-#         except:
-#             col_e.markdown(f"No Garage")
+        # Initialize default variables based on average of neighborhood
+        pkl_predhouse = FinalData.iloc[0].copy()
+        for f in features:
+            pkl_predhouse[f] = FinalData.loc[address_df.index][f].mean()
         
-#         # Pool
-#         if pkl_basehouse['PoolArea__1'].values[0] == 0:
-#             base_pool = col_b.radio('Pool',['No'])
-#             reno_pool = col_r.radio('Build Pool',['No', 'Yes'])
-#             pkl_renohouse['PoolArea__1'] = 0 if reno_pool == 'No' else 1
-#         else:
-#             base_pool = col_b.radio('Pool',['Yes'])
+         #**********************
+        # Total number of rooms
+        tot_rooms = col_main.select_slider(
+            'Select Number of Rooms',
+            options = range(0,int(FinalData.loc[address_df.index]['TotRmsAbvGrd'].max())))
+        pkl_predhouse['TotRmsAbvGrd'] = tot_rooms
+
+        # Total number of bathrooms
+        tot_bath = col_main.select_slider(
+            'Select Number of Bathrooms',
+            options = map(lambda x: x/10.0, range(0,int(10*(FinalData.loc[address_df.index]['Totalbathr'].max())),5)))
+        pkl_predhouse['Totalbathr'] = tot_bath
+
+        # Total number of garage car spaces
+        tot_cars = col_main.select_slider(
+            'Select Number of Garage Car Spaces',
+            options = range(0,int(addID.loc[address_df.index]['GarageCars'].max())))
+        car_dim = 320 # square footage of one car space on average
+        tot_gar_area = car_dim*tot_cars
+        pkl_predhouse['GarageArea'] = tot_gar_area
+
+        # Total above-ground living area
+        tot_liv_area = col_main.select_slider(
+            'Select Ground Living Area (sf)',
+            options = range(0,int(FinalData.loc[address_df.index]['GrLivArea'].max()),100))
+        pkl_predhouse['GrLivArea'] = tot_liv_area
+
+        # Total lot area
+        tot_lot_area = col_b.select_slider(
+            'Select Lot Area (sf)',
+            options = range(0,int(FinalData.loc[address_df.index]['LotArea'].max()),100))
+        pkl_predhouse['LotArea'] = tot_lot_area
+
+        # Total lot frontage length
+        tot_lot_length = col_b.select_slider(
+            'Select Lot Frontage (ft)',
+            options = range(0,int(FinalData.loc[address_df.index]['LotFrontage'].max()),10))
+        pkl_predhouse['LotFrontage'] = tot_lot_length
+
+        col_b.markdown('##### House Quality')
+
+        # Overall quality of house
+        overall_qual = col_b.select_slider(
+            'Select Overall Quality of House (rating)',
+            options = range(0,int(FinalData['OverallQual'].max())))
+        pkl_predhouse['OverallQual'] = overall_qual
+
+        # Age of house
+        age = col_b.select_slider(
+            'Select Approximate Age (years)',
+            options = range(0,int(FinalData.loc[address_df.index]['Age'].max()),5))
+        pkl_predhouse['Age'] = age
+
+        # Presence of basement
+        base_ques = col_e.radio('Basement?', ['Yes', 'No'])
+        if base_ques == 'Yes':
+            base_pres = FinalData.loc[address_df.index]['TotalBsmtSF'].mean()
+        else:
+            base_pres = 0
+        pkl_predhouse['TotalBsmtSF'] = base_pres
+
+        # Driveway paving
+        pave_ques = col_e.radio('Driveway Paved?', ['Yes', 'No'])
+        if pave_ques == 'Yes':
+            pave_pres = 1
+        else:
+            pave_pres = 0
+        pkl_predhouse['PavedDrive__0'] = pave_pres
+
+        # Remodeled
+        remo_ques = col_e.radio('Remodeled?', ['Yes', 'No'])
+        if remo_ques == 'Yes':
+            remo_pres = 1
+        else:
+            remo_pres = 0
+        pkl_predhouse['RemodelBool'] = remo_pres
     
-#         # Base House MODEL PRICE
-#         pkl_baseprice = np.floor(np.exp(elasticnet(FinalData, pkl_basehouse)[0]))
-#         col_rpx.subheader(f'**${num_format(pkl_baseprice)}**')
-#         col_rpx.caption('Baseline Price Prediction')
-#         col_rpx.write('-------------------------')
-#         col_rpx.caption(f"Actual Price: **${num_format(pkl_basehouse['SalePrice'].values[0])}**")
-#         col_rpx.markdown(f"Livable Space: **{num_format(pkl_basehouse['GrLivArea'].values[0])}** sf")
-#         col_rpx.markdown(f"Percentage of finished Bsmt: **{num_format(pkl_basehouse['FinBsmt_Perc'].values[0])}** %")
-#         col_rpx.markdown(f"Garage Size: **{num_format(pkl_basehouse2['GarageCars'].values[0])}** cars")
-#         col_rpx.markdown(f"finished Outside Spaces: **{num_format(pkl_basehouse['Outside_Spaces'].values[0])}** sf")
+        # Base House MODEL PRICE
+        pkl_predprice = np.floor(np.exp(elasticnet2(FinalData, pkl_predhouse)[0]))
+        col_e.subheader(f'**${num_format(pkl_predprice)}**')
+        col_e.caption('Baseline Price Prediction')
         
 #=============================================================================
 # Home Remodelling Estimates
