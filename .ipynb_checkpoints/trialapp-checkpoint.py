@@ -284,17 +284,17 @@ elif page == "Price Predictions":
         # Driveway paving
         pave_ques = col_e.radio('Driveway Paved?', ['Yes', 'No'])
         if pave_ques == 'Yes':
-            pave_pres = 1
-        else:
             pave_pres = 0
+        else:
+            pave_pres = 1
         pkl_predhouse['PavedDrive__0'] = pave_pres
 
         # Remodeled
         remo_ques = col_e.radio('Remodeled?', ['Yes', 'No'])
         if remo_ques == 'Yes':
-            remo_pres = 1
-        else:
             remo_pres = 0
+        else:
+            remo_pres = 1
         pkl_predhouse['RemodelBool'] = remo_pres
     
         # Base House MODEL PRICE
