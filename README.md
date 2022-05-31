@@ -6,3 +6,6 @@ The StreamLit website service shall point to this directory in order to view the
 
 The full repository of the project code can be found here:
 https://github.com/MonikaSinghGit/AmesIowa
+
+The fully functioning website can be found here:
+https://share.streamlit.io/jchatterjee/nycdsa_ml_project_website/main/trialapp.py
