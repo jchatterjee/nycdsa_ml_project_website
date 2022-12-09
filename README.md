@@ -31,7 +31,9 @@ The following proposed improvements were used to determine how much added value 
 A variety of machine learning regression models such as Multilinear, Logistic, Huber, Penalized, Ridge, Lasso, Random Forest, and Support Vector Machines (SVM) were attempted but ElasticNet turned out to be the most accurate and easily implemented one. In conclusion, a combination of quantitative and ordinal categorical features working together to determine the overall price of a house and its improvements made it ideal for this task.
 
 The full conclusions of this study can be found written in this article:
+
 https://nycdatascience.com/blog/student-works/using-data-to-predict-prices-of-houses-in-ames-ia/
 
 The full repository of the project code can be found here:
+
 https://github.com/MonikaSinghGit/AmesIowa
