@@ -1,4 +1,5 @@
 # Interactive Data Analytics Dashboard
+## Machine Learning Group Project
  
 <p align="justify">The following website was created in Streamlit to automatically generate a web-based interactive dashboard from Python code:</p>
 
